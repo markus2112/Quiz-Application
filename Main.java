@@ -1,249 +1,266 @@
+package quiz.app;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.*;
 
-class Book {
-    String title, author;
-    boolean isIssued;
+public class Main extends JFrame implements ActionListener {
 
-    Book(String title, String author) {
-        this.title = title.trim();
-        this.author = author.trim();
-        this.isIssued = false;
+    private CardLayout card;
+    private JPanel mainPanel;
+
+    // Login components
+    private JTextField nameField, rollField, emailField, deptField, classField, sectionField;
+    private String userName = "";
+
+    // Quiz state
+    private int score = 0;
+    private int currentQuestion = 0;
+    private final String[][] questions = {
+            {"Java is a ?", "Programming Language", "Operating System", "Browser", "IDE", "A"},
+            {"Which company developed Java?", "Oracle", "Sun Microsystems", "Google", "IBM", "B"},
+            {"Which keyword is used to inherit a class in Java?", "implement", "extends", "inherits", "super", "B"},
+            {"Java is:", "Compiled", "Interpreted", "Both", "None", "C"},
+            {"Which of these is not a Java keyword?", "class", "interface", "object", "extends", "C"},
+            {"Which method is used to start a thread in Java?", "start()", "run()", "init()", "execute()", "A"},
+            {"What is the default value of a boolean in Java?", "true", "false", "null", "0", "B"},
+            {"Which of the following is used to handle exceptions in Java?", "try", "catch", "throw", "throws", "B"},
+            {"What does JVM stand for?", "Java Visual Machine", "Java Virtual Machine", "Java Variable Machine", "Java Value Machine", "B"},
+            {"Which of the following is a wrapper class in Java?", "Integer", "Double", "Character", "All of the above", "D"}
+    };
+
+    // Quiz components
+    private JRadioButton opt1, opt2, opt3, opt4;
+    private ButtonGroup options;
+    private JLabel qLabel;
+    private JButton quizNextBtn;
+
+    // Score screen
+    private JLabel scoreLabel;
+
+    public Main() {
+        setTitle("Quiz Application");
+        setSize(800, 600);
+        setLocation(300, 100);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        card = new CardLayout();
+        mainPanel = new JPanel(card);
+        add(mainPanel);
+
+        initLoginScreen();
+        initRulesScreen();
+        initQuizScreen();
+        initScoreScreen();
+
+        setVisible(true);
     }
 
-    public String toString() {
-        return String.format("\"%s\" by %s [%s]", title, author, isIssued ? "Issued" : "Available");
-    }
-}
+    // 1. LOGIN SCREEN
+    private void initLoginScreen() {
+        JPanel loginPanel = new JPanel(null);
+        loginPanel.setBackground(Color.WHITE);
 
-public class Main {
-    JFrame loginFrame, mainFrame;
-    ArrayList<Book> books = new ArrayList<>();
-    final String FILE_NAME = "books.txt";
+        JLabel heading = new JLabel("QUIZ APPLICATION");
+        heading.setBounds(250, 50, 300, 30);
+        heading.setFont(new Font("Viner Hand ITC", Font.BOLD, 24));
+        loginPanel.add(heading);
+
+        JLabel nameLabel = new JLabel("Enter Your Name:");
+        nameLabel.setBounds(250, 120, 200, 25);
+        loginPanel.add(nameLabel);
+
+        nameField = new JTextField();
+        nameField.setBounds(250, 150, 300, 30);
+        loginPanel.add(nameField);
+
+        JLabel rollLabel = new JLabel("Enter Roll No:");
+        rollLabel.setBounds(250, 180, 200, 25);
+        loginPanel.add(rollLabel);
+
+        rollField = new JTextField();
+        rollField.setBounds(250, 210, 300, 30);
+        loginPanel.add(rollField);
+
+        JLabel emailLabel = new JLabel("Enter Email ID:");
+        emailLabel.setBounds(250, 240, 200, 25);
+        loginPanel.add(emailLabel);
+
+        emailField = new JTextField();
+        emailField.setBounds(250, 270, 300, 30);
+        loginPanel.add(emailField);
+
+        JLabel deptLabel = new JLabel("Enter Department:");
+        deptLabel.setBounds(250, 300, 200, 25);
+        loginPanel.add(deptLabel);
+
+        deptField = new JTextField();
+        deptField.setBounds(250, 330, 300, 30);
+        loginPanel.add(deptField);
+
+        JLabel classLabel = new JLabel("Enter Class:");
+        classLabel.setBounds(250, 360, 200, 25);
+        loginPanel.add(classLabel);
+
+        classField = new JTextField();
+        classField.setBounds(250, 390, 300, 30);
+        loginPanel.add(classField);
+
+        JLabel sectionLabel = new JLabel("Enter Section:");
+        sectionLabel.setBounds(250, 420, 200, 25);
+        loginPanel.add(sectionLabel);
+
+        sectionField = new JTextField();
+        sectionField.setBounds(250, 450, 300, 30);
+        loginPanel.add(sectionField);
+
+        JButton nextBtn = new JButton("Next");
+        nextBtn.setBounds(350, 490, 100, 30);
+        nextBtn.setBackground(new Color(22,99,54));
+        nextBtn.setForeground(Color.WHITE);
+        nextBtn.addActionListener(e -> {
+            // Validate all fields
+            String inputName = nameField.getText().trim();
+            String inputRoll = rollField.getText().trim();
+            String inputEmail = emailField.getText().trim();
+            String inputDept = deptField.getText().trim();
+            String inputClass = classField.getText().trim();
+            String inputSection = sectionField.getText().trim();
+
+            if (!inputName.isEmpty() && !inputRoll.isEmpty() && !inputEmail.isEmpty() && !inputDept.isEmpty() && !inputClass.isEmpty() && !inputSection.isEmpty()) {
+                userName = inputName;
+                card.show(mainPanel, "Rules");
+            }
+        });
+        loginPanel.add(nextBtn);
+
+        mainPanel.add(loginPanel, "Login");
+    }
+
+    // 2. RULES SCREEN
+    private void initRulesScreen() {
+        JPanel rulesPanel = new JPanel(null);
+
+        JLabel heading = new JLabel();
+        heading.setText("Welcome " + userName + " to QUIZ TEST");
+        heading.setBounds(100, 80, 600, 30);
+        heading.setFont(new Font("Viner Hand ITC", Font.BOLD, 22));
+        heading.setForeground(new Color(22,99,54));
+        rulesPanel.add(heading);
+
+        JLabel rules = new JLabel("<html>"
+                + "1. All Questions are compulsory.<br><br>"
+                + "2. There are 10 questions.<br><br>"
+                + "3. Each question carry 2 marks.<br><br>"
+                + "4. No cheating.<br><br>"
+                + "5. Click 'Start' to begin.<br><br>"
+                + "</html>");
+        rules.setBounds(70, 130, 650, 250);
+        rules.setFont(new Font("Tahoma", Font.PLAIN, 16));
+        rules.setForeground(new Color(22,99,54));
+        rulesPanel.add(rules);
+
+        JButton startBtn = new JButton("Start");
+        startBtn.setBounds(350, 400, 100, 30);
+        startBtn.setBackground(new Color(22,99,54));
+        startBtn.setForeground(Color.WHITE);
+        startBtn.addActionListener(e -> card.show(mainPanel, "Quiz"));
+        rulesPanel.add(startBtn);
+
+        mainPanel.add(rulesPanel, "Rules");
+    }
+
+    // 3. QUIZ SCREEN
+    private void initQuizScreen() {
+        JPanel quizPanel = new JPanel(null);
+
+        qLabel = new JLabel();
+        qLabel.setBounds(50, 50, 700, 30);
+        qLabel.setFont(new Font("Tahoma", Font.BOLD, 18));
+        quizPanel.add(qLabel);
+
+        opt1 = new JRadioButton();
+        opt2 = new JRadioButton();
+        opt3 = new JRadioButton();
+        opt4 = new JRadioButton();
+
+        opt1.setBounds(100, 100, 600, 30);
+        opt2.setBounds(100, 150, 600, 30);
+        opt3.setBounds(100, 200, 600, 30);
+        opt4.setBounds(100, 250, 600, 30);
+
+        options = new ButtonGroup();
+        options.add(opt1);
+        options.add(opt2);
+        options.add(opt3);
+        options.add(opt4);
+
+        quizPanel.add(opt1);
+        quizPanel.add(opt2);
+        quizPanel.add(opt3);
+        quizPanel.add(opt4);
+
+        quizNextBtn = new JButton("Next");
+        quizNextBtn.setBounds(350, 350, 100, 30);
+        quizNextBtn.setBackground(new Color(22,99,54));
+        quizNextBtn.setForeground(Color.WHITE);
+        quizNextBtn.addActionListener(this);
+        quizPanel.add(quizNextBtn);
+
+        mainPanel.add(quizPanel, "Quiz");
+
+        loadQuestion();
+    }
+
+    private void loadQuestion() {
+        if (currentQuestion < questions.length) {
+            qLabel.setText("Q" + (currentQuestion + 1) + ": " + questions[currentQuestion][0]);
+            opt1.setText("A. " + questions[currentQuestion][1]);
+            opt2.setText("B. " + questions[currentQuestion][2]);
+            opt3.setText("C. " + questions[currentQuestion][3]);
+            opt4.setText("D. " + questions[currentQuestion][4]);
+            options.clearSelection();
+        } else {
+            card.show(mainPanel, "Score");
+            scoreLabel.setText("Thank you, " + userName + ". Your score: "
+                    + score + " / " + questions.length);
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String correct = questions[currentQuestion][5];
+        String selected = "";
+        if (opt1.isSelected()) selected = "A";
+        else if (opt2.isSelected()) selected = "B";
+        else if (opt3.isSelected()) selected = "C";
+        else if (opt4.isSelected()) selected = "D";
+
+        if (selected.equals(correct)) score++;
+        currentQuestion++;
+        loadQuestion();
+    }
+
+    // 4. SCORE SCREEN
+    private void initScoreScreen() {
+        JPanel scorePanel = new JPanel(null);
+
+        scoreLabel = new JLabel();
+        scoreLabel.setBounds(150, 150, 600, 40);
+        scoreLabel.setFont(new Font("Tahoma", Font.BOLD, 22));
+        scorePanel.add(scoreLabel);
+
+        JButton exitBtn = new JButton("Exit");
+        exitBtn.setBounds(350, 250, 100, 30);
+        exitBtn.setBackground(new Color(22,99,54));
+        exitBtn.setForeground(Color.WHITE);
+        exitBtn.addActionListener(e -> System.exit(0));
+        scorePanel.add(exitBtn);
+
+        mainPanel.add(scorePanel, "Score");
+    }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Main().createLoginWindow());
-    }
-
-    void createLoginWindow() {
-        loginFrame = new JFrame("Library Login");
-        loginFrame.setSize(350, 200);
-        loginFrame.setLayout(new GridLayout(4, 2, 10, 10));
-        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loginFrame.setLocationRelativeTo(null);
-
-        JTextField userField = new JTextField();
-        JPasswordField passField = new JPasswordField();
-        JButton loginBtn = new JButton("Login");
-
-        loginFrame.add(new JLabel("Username:"));
-        loginFrame.add(userField);
-        loginFrame.add(new JLabel("Password:"));
-        loginFrame.add(passField);
-        loginFrame.add(new JLabel(""));
-        loginFrame.add(loginBtn);
-
-        loginBtn.addActionListener(e -> {
-            String user = userField.getText().trim();
-            String pass = new String(passField.getPassword()).trim();
-            if (user.equals("admin") && pass.equals("1234")) {
-                loginFrame.dispose();
-                loadBooks();
-                createMainWindow();
-            } else {
-                JOptionPane.showMessageDialog(loginFrame, "Invalid credentials!", "Login Failed", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        loginFrame.setVisible(true);
-    }
-
-    void createMainWindow() {
-        mainFrame = new JFrame("Library Management System");
-        mainFrame.setSize(400, 400);
-        mainFrame.setLayout(new GridLayout(8, 1, 5, 5));
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setLocationRelativeTo(null);
-
-        String[] btnLabels = {"Add Book", "Remove Book", "Search by Title", "Search by Author", "Issue Book", "Return Book", "Show All Books", "Exit & Save"};
-        JButton[] buttons = new JButton[btnLabels.length];
-
-        for (int i = 0; i < btnLabels.length; i++) {
-            buttons[i] = new JButton(btnLabels[i]);
-            mainFrame.add(buttons[i]);
-        }
-
-        buttons[0].addActionListener(e -> addBook());
-        buttons[1].addActionListener(e -> removeBook());
-        buttons[2].addActionListener(e -> searchBook("title"));
-        buttons[3].addActionListener(e -> searchBook("author"));
-        buttons[4].addActionListener(e -> issueBook());
-        buttons[5].addActionListener(e -> returnBook());
-        buttons[6].addActionListener(e -> showAllBooks());
-        buttons[7].addActionListener(e -> {
-            saveBooks();
-            System.exit(0);
-        });
-
-        mainFrame.setVisible(true);
-    }
-
-    void addBook() {
-        String title = JOptionPane.showInputDialog(mainFrame, "Enter Book Title:");
-        String author = JOptionPane.showInputDialog(mainFrame, "Enter Author Name:");
-        if (title == null || author == null || title.trim().isEmpty() || author.trim().isEmpty()) {
-            showMsg("Both title and author are required.", "Input Error");
-            return;
-        }
-
-        for (Book b : books) {
-            if (b.title.equalsIgnoreCase(title.trim()) && b.author.equalsIgnoreCase(author.trim())) {
-                showMsg("This book already exists!", "Duplicate Entry");
-                return;
-            }
-        }
-
-        books.add(new Book(title, author));
-        saveBooks();
-        showMsg("Book added successfully.");
-    }
-
-    void removeBook() {
-        String title = JOptionPane.showInputDialog(mainFrame, "Enter Title to Remove:");
-        if (title == null || title.trim().isEmpty()) {
-            showMsg("Title cannot be empty.", "Input Error");
-            return;
-        }
-
-        boolean found = false;
-        Iterator<Book> it = books.iterator();
-        while (it.hasNext()) {
-            Book b = it.next();
-            if (b.title.equalsIgnoreCase(title.trim())) {
-                found = true;
-                it.remove();
-            }
-        }
-
-        if (found) {
-            saveBooks();
-            showMsg("Book(s) removed.");
-        } else {
-            showMsg("No book found with this title.", "Not Found");
-        }
-    }
-
-    void searchBook(String mode) {
-        String key = JOptionPane.showInputDialog(mainFrame, "Enter " + (mode.equals("title") ? "Title" : "Author") + ":");
-        if (key == null || key.trim().isEmpty()) {
-            showMsg(mode + " cannot be empty.", "Input Error");
-            return;
-        }
-
-        StringBuilder result = new StringBuilder();
-        for (Book b : books) {
-            if (mode.equals("title") && b.title.equalsIgnoreCase(key.trim()) ||
-                    mode.equals("author") && b.author.equalsIgnoreCase(key.trim())) {
-                result.append(b).append("\n");
-            }
-        }
-
-        showMsg(result.length() == 0 ? "No match found." : result.toString(), "Search Results");
-    }
-
-    void issueBook() {
-        String title = JOptionPane.showInputDialog(mainFrame, "Enter Title to Issue:");
-        if (title == null || title.trim().isEmpty()) {
-            showMsg("Title cannot be empty.", "Input Error");
-            return;
-        }
-
-        for (Book b : books) {
-            if (b.title.equalsIgnoreCase(title.trim())) {
-                if (!b.isIssued) {
-                    b.isIssued = true;
-                    saveBooks();
-                    showMsg("Book issued.");
-                    return;
-                } else {
-                    showMsg("Book is already issued.", "Already Issued");
-                    return;
-                }
-            }
-        }
-        showMsg("Book not found.", "Not Found");
-    }
-
-    void returnBook() {
-        String title = JOptionPane.showInputDialog(mainFrame, "Enter Title to Return:");
-        if (title == null || title.trim().isEmpty()) {
-            showMsg("Title cannot be empty.", "Input Error");
-            return;
-        }
-
-        for (Book b : books) {
-            if (b.title.equalsIgnoreCase(title.trim())) {
-                if (b.isIssued) {
-                    b.isIssued = false;
-                    saveBooks();
-                    showMsg("Book returned.");
-                    return;
-                } else {
-                    showMsg("Book is not issued.", "Invalid Return");
-                    return;
-                }
-            }
-        }
-        showMsg("Book not found.", "Not Found");
-    }
-
-    void showAllBooks() {
-        if (books.isEmpty()) {
-            showMsg("Library is empty.", "No Books");
-            return;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (Book b : books) sb.append(b).append("\n");
-
-        showMsg(sb.toString(), "Library Inventory");
-    }
-
-    void saveBooks() {
-        try (PrintWriter pw = new PrintWriter(FILE_NAME)) {
-            for (Book b : books)
-                pw.println(b.title + "," + b.author + "," + b.isIssued);
-        } catch (IOException e) {
-            showMsg("Error saving books.", "File Error");
-        }
-    }
-
-    void loadBooks() {
-        File file = new File(FILE_NAME);
-        if (!file.exists()) return;
-
-        try (Scanner sc = new Scanner(file)) {
-            while (sc.hasNextLine()) {
-                String[] parts = sc.nextLine().split(",", 3);
-                if (parts.length == 3) {
-                    Book b = new Book(parts[0], parts[1]);
-                    b.isIssued = Boolean.parseBoolean(parts[2]);
-                    books.add(b);
-                }
-            }
-        } catch (IOException e) {
-            showMsg("Error loading books.", "File Error");
-        }
-    }
-
-    void showMsg(String msg) {
-        showMsg(msg, "Library");
-    }
-
-    void showMsg(String msg, String title) {
-        JOptionPane.showMessageDialog(mainFrame, msg, title, JOptionPane.INFORMATION_MESSAGE);
+        SwingUtilities.invokeLater(Main::new);
     }
 }
